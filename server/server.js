@@ -1,10 +1,11 @@
 const express = require("express");
 
+const prisma = require("./prisma");
+
 const app = express();
 app.use(express.json());
 
 const PORT = 5000;
-let tasks = [];
 
 app.get("/", (req, res) => {
   res.send("Task Management API is running!");
