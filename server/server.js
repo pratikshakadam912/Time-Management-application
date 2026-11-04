@@ -11,25 +11,31 @@ app.get("/", (req, res) => {
   res.send("Task Management API is running!");
 });
 
-app.post("/api/tasks", (req, res) => {
-  const { title, description, priority } = req.body;
-  if (!title) {
-    return res.status(400).json({
-      message: "Task title is required",
+app.post("/api/tasks", async (req, res) => {
+  try {
+    const { title, desccription, priority } = req.body;
+    if (!title) {
+      return res.status(400).json({
+        message: "Task title is required",
+      });
+    }
+
+    const newTask = await prisma.task.create({
+      data: {
+        title,
+        description,
+        priority,
+      },
+    });
+    res.status(201).json({
+      message: "Task created successfully",
+      task: newTask,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating task",
     });
   }
-
-  const newTask = {
-    id: Date.now(),
-    title,
-    description,
-    priority,
-  };
-  tasks.push(newTask);
-  res.status(201).json({
-    message: "Task created successfully",
-    task: newTask,
-  });
 });
 
 app.get("/api/tasks", (req, res) => {
