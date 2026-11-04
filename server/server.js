@@ -13,7 +13,8 @@ app.get("/", (req, res) => {
 
 app.post("/api/tasks", async (req, res) => {
   try {
-    const { title, desccription, priority } = req.body;
+    const { title, description, priority } = req.body;
+
     if (!title) {
       return res.status(400).json({
         message: "Task title is required",
@@ -27,60 +28,101 @@ app.post("/api/tasks", async (req, res) => {
         priority,
       },
     });
+
     res.status(201).json({
       message: "Task created successfully",
       task: newTask,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       message: "Error creating task",
     });
   }
 });
 
-app.get("/api/tasks", (req, res) => {
-  res.status(200).json({
-    tasks: tasks,
-  });
-});
+app.get("/api/tasks", async (req, res) => {
+  try {
+    const tasks = await prisma.task.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-app.put("/api/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const task = tasks.find((t) => t.id === id);
-  if (!tasks) {
-    return res.status(404).json({
-      message: "Task not found",
+    res.status(200).json({
+      tasks,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching tasks",
     });
   }
-
-  const { title, description, priority } = req.body;
-
-  task.title = title ?? task.title;
-  task.description = description ?? task.description;
-  task.priority = priority ?? task.priority;
-
-  res.status(200).json({
-    message: "Task updated successfully",
-    task: task,
-  });
 });
 
-app.delete("/api/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const taskIndex = tasks.findIndex((t) => t.id === id);
+app.put("/api/tasks/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { title, description, priority, status } = req.body;
 
-  if (taskIndex === -1) {
-    return res.status(404).json({
-      message: "Task not found",
+    const existingTask = await prisma.task.findUnique({
+      where: { id },
+    });
+    if (!existingTask) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        priority,
+        status,
+      },
+    });
+    res.status(200).json({
+      message: "Task updated successfully",
+      task: updatedTask,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error updating task",
     });
   }
+});
 
-  const deletedTask = tasks.splice(taskIndex, 1);
+app.delete("/api/tasks/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
 
-  res.status(200).json({
-    message: "Task deleted successfully",
-    task: deletedTask[0],
-  });
+    const existingTask = await prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!existingTask) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    const deletedTask = await prisma.task.delete({
+      where: { id },
+    });
+
+    res.status(200).json({
+      message: "Task deleted successfully",
+      task: deletedTask,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error deleting task",
+    });
+  }
 });
 
 app.listen(PORT, () => {
