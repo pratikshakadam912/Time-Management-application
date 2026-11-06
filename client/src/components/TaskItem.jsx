@@ -68,8 +68,13 @@ function TaskItem({ task, onUpdate, onDelete }) {
             <option value="High">High</option>
           </select>
 
-          <button onClick={handleSave}>Save</button>
-          <button onClick={() => setIsEditing(false)}>Cancel</button>
+          <button type="button" onClick={handleSave}>
+            Save
+          </button>
+
+          <button type="button" onClick={() => setIsEditing(false)}>
+            Cancel
+          </button>
         </div>
       ) : (
         <>
@@ -86,6 +91,7 @@ function TaskItem({ task, onUpdate, onDelete }) {
               <button onClick={() => setIsEditing(true)}>Edit</button>
 
               <button
+                type="button"
                 className="delete-button"
                 onClick={() => onDelete(task.id)}
               >

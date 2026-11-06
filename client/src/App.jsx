@@ -10,6 +10,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("newest");
 
   const fetchTasks = async () => {
     try {
@@ -60,9 +61,13 @@ function App() {
   }, []);
 
   const filteredTasks = tasks.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(search.toLowerCase()) ||
-      (task.description || "").toLowerCase().includes(search.toLowerCase());
+    const searchTerm = search.trim().toLowerCase();
+
+    const matchesSearch = task.title
+      .toLowerCase()
+      .includes(searchTerm)(task.description || "")
+      .toLowerCase()
+      .includes(searchTerm);
 
     const matchesStatus =
       statusFilter === "All" || task.status === statusFilter;
@@ -186,8 +191,15 @@ function App() {
             </select>
           </div>
 
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="high">High Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
+
           <TaskList
-            tasks={filteredTasks}
+            tasks={sortedTasks}
             onUpdate={updateTask}
             onDelete={deleteTask}
           />

@@ -42,7 +42,7 @@ function TaskForm({ onTaskAdded }) {
       />
 
       <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-        <option value="low">LOw</option>
+        <option value="Low">Low</option>
         <option value="Medium">Medium</option>
         <option value="High">High</option>
       </select>
