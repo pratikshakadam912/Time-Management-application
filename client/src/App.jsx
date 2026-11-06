@@ -7,6 +7,9 @@ import "./App.css";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
 
   const fetchTasks = async () => {
     try {
@@ -24,12 +27,51 @@ function App() {
       setShowForm(false);
     } catch (error) {
       console.error("Error adding task:", error);
+      alert("Could not add task");
+    }
+  };
+
+  const updateTask = async (id, taskData) => {
+    try {
+      await API.put(`/tasks/${id}`, taskData);
+      await fetchTasks();
+    } catch (error) {
+      console.error("Error updating task:", error);
+      alert("Could not update task");
+    }
+  };
+
+  const deleteTask = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) {
+      return;
+    }
+
+    try {
+      await API.delete(`/tasks/${id}`);
+      await fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      alert("Could not delete task");
     }
   };
 
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch =
+      task.title.toLowerCase().includes(search.toLowerCase()) ||
+      (task.description || "").toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" || task.status === statusFilter;
+
+    const matchesPriority =
+      priorityFilter === "All" || task.priority === priorityFilter;
+
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
 
   const completed = tasks.filter((task) => task.status === "Completed").length;
 
@@ -115,7 +157,40 @@ function App() {
             </div>
           </div>
 
-          <TaskList tasks={tasks} />
+          <div className="task-filters">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+            >
+              <option value="All">All Priorities</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+
+          <TaskList
+            tasks={filteredTasks}
+            onUpdate={updateTask}
+            onDelete={deleteTask}
+          />
         </section>
       </main>
     </div>
