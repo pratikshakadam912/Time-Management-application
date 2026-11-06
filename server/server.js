@@ -4,6 +4,15 @@ const express = require("express");
 const prisma = require("./prisma");
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["content-Type"],
+  }),
+);
+
 app.use(express.json());
 
 const PORT = 5000;
